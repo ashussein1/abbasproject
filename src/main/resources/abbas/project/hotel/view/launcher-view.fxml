@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.2"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="abbas.project.hotel.controller.ModeLauncherController"
+            styleClass="dark-root">
+
+    <center>
+        <VBox alignment="CENTER" spacing="20" styleClass="center-container">
+            <VBox maxWidth="420" spacing="18" styleClass="card">
+
+                <VBox spacing="4">
+                    <Label text="Ab's Hotel Reservation System" styleClass="title-label"/>
+                    <Label text="Choose how you want to interact with the system."
+                           styleClass="subtitle-label"/>
+                </VBox>
+
+                <VBox spacing="10" alignment="CENTER">
+                    <Button text="Kiosk Mode"
+                            prefWidth="220"
+                            onAction="#openKiosk"
+                            styleClass="secondary-button"/>
+
+                    <Button text="Admin Mode"
+                            prefWidth="220"
+                            onAction="#openAdmin"
+                            styleClass="secondary-button"/>
+
+                    <Button text="Feedback Only"
+                            prefWidth="220"
+                            onAction="#openFeedback"
+                            styleClass="secondary-button"/>
+
+                    <!-- Exit application -->
+                    <Button text="Exit"
+                            prefWidth="220"
+                            onAction="#handleExit"
+                            styleClass="secondary-button"/>
+                </VBox>
+            </VBox>
+        </VBox>
+    </center>
+
+    <padding>
+        <Insets top="40" bottom="40" left="40" right="40"/>
+    </padding>
+</BorderPane>
