@@ -1,36 +1,33 @@
 package abbas.project.hotel.app;
 
+import abbas.project.hotel.events.DomainEventPublisher;
 import abbas.project.hotel.repository.*;
+import abbas.project.hotel.security.AdminAuthService;
 import abbas.project.hotel.service.*;
 import com.google.inject.AbstractModule;
-import com.google.inject.Scopes;
-
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
+import com.google.inject.Singleton;
 
 public class AppConfig extends AbstractModule {
 
     @Override
     protected void configure() {
-        // JPA EntityManagerFactory as singleton
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("hotelPU");
-        bind(EntityManagerFactory.class).toInstance(emf);
 
-        // Repository bindings
-        bind(GuestRepository.class).to(JpaGuestRepository.class).in(Scopes.SINGLETON);
-        bind(RoomRepository.class).to(JpaRoomRepository.class).in(Scopes.SINGLETON);
-        bind(ReservationRepository.class).to(JpaReservationRepository.class).in(Scopes.SINGLETON);
-        bind(FeedbackRepository.class).to(JpaFeedbackRepository.class).in(Scopes.SINGLETON);
-        bind(AdminUserRepository.class).to(JpaAdminUserRepository.class).in(Scopes.SINGLETON);
-        bind(ActivityLogRepository.class).to(JpaActivityLogRepository.class).in(Scopes.SINGLETON);
+        // Repositories (in-memory for now, but structured as a persistence layer)
+        bind(FeedbackRepository.class).in(Singleton.class);
+        bind(GuestRepository.class).in(Singleton.class);
+        bind(ReservationRepository.class).in(Singleton.class);
+        bind(RoomRepository.class).in(Singleton.class);
 
-        // Services (Guice will inject dependencies automatically)
-        bind(ActivityLogService.class).in(Scopes.SINGLETON);
-        bind(AuthService.class).in(Scopes.SINGLETON);
-        bind(BillingService.class).in(Scopes.SINGLETON);
-        bind(LoyaltyService.class).in(Scopes.SINGLETON);
-        bind(ReservationService.class).in(Scopes.SINGLETON);
-        bind(FeedbackService.class).in(Scopes.SINGLETON);
-        bind(RoomFactory.class).in(Scopes.SINGLETON);
+        // Core services
+        bind(DomainEventPublisher.class).in(Singleton.class);
+        bind(ActivityLogService.class).in(Singleton.class);
+        bind(FeedbackService.class).in(Singleton.class);
+        bind(ReservationService.class).in(Singleton.class);
+        bind(BillingService.class).in(Singleton.class);
+        bind(LoyaltyService.class).in(Singleton.class);
+        bind(ReportingService.class).in(Singleton.class);
+
+        // Security
+        bind(AdminAuthService.class).in(Singleton.class);
     }
 }
