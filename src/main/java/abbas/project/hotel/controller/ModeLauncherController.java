@@ -1,40 +1,15 @@
 package abbas.project.hotel.controller;
 
 import abbas.project.hotel.app.MainApp;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.Node;
 import javafx.stage.Stage;
+import javafx.event.ActionEvent;
+import javafx.scene.Node;
 
 public class ModeLauncherController {
-
-    private void openWindow(String fxmlPath, String title) {
-        try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource(fxmlPath));
-            loader.setControllerFactory(MainApp.getInjector()::getInstance);
-
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
-
-            scene.getStylesheets().add(
-                    getClass()
-                            .getResource("/abbas/project/hotel/style/dark-theme.css")
-                            .toExternalForm()
-            );
-
-            Stage stage = new Stage();
-            stage.setTitle(title);
-            stage.setScene(scene);
-            stage.show();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     @FXML
     private void openKiosk() {
@@ -58,5 +33,32 @@ public class ModeLauncherController {
     private void handleExit(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.close();
+    }
+
+    private void openWindow(String fxmlPath, String title) {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource(fxmlPath));
+
+            // 🔑 IMPORTANT: use Guice for controllers here too
+            loader.setControllerFactory(MainApp.getInjector()::getInstance);
+
+            Parent root = loader.load();
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    getClass()
+                            .getResource("/abbas/project/hotel/style/dark-theme.css")
+                            .toExternalForm()
+            );
+
+            Stage stage = new Stage();
+            stage.setTitle(title);
+            stage.setScene(scene);
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace(); // for now just log
+        }
     }
 }

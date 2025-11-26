@@ -1,8 +1,8 @@
 package abbas.project.hotel.controller;
 
 import abbas.project.hotel.app.MainApp;
-import abbas.project.hotel.model.AdminUser;
-import abbas.project.hotel.service.AuthService;
+import abbas.project.hotel.security.AdminAuthService;
+import com.google.inject.Inject;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -14,13 +14,11 @@ import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import com.google.inject.Inject;
 import java.io.IOException;
-import java.util.Optional;
 
 public class AdminLoginController {
 
-    private final AuthService authService;
+    private final AdminAuthService authService;
 
     @FXML
     private TextField usernameField;
@@ -32,7 +30,7 @@ public class AdminLoginController {
     private Label errorLabel;
 
     @Inject
-    public AdminLoginController(AuthService authService) {
+    public AdminLoginController(AdminAuthService authService) {
         this.authService = authService;
     }
 
@@ -46,8 +44,7 @@ public class AdminLoginController {
             return;
         }
 
-        Optional<AdminUser> user = authService.login(username, password);
-        if (user.isEmpty()) {
+        if (!authService.authenticate(username, password)) {
             errorLabel.setText("Invalid username or password.");
             return;
         }
@@ -66,13 +63,10 @@ public class AdminLoginController {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/abbas/project/hotel/view/admin-dashboard-view.fxml")
             );
+            // ✅ Use the same Guice injector as MainApp
             loader.setControllerFactory(MainApp.getInjector()::getInstance);
 
             Scene scene = new Scene(loader.load());
-            scene.getStylesheets().add(
-                    getClass().getResource("/abbas/project/hotel/style/dark-theme.css")
-                            .toExternalForm());
-
             Stage stage = new Stage();
             stage.setTitle("Hotel Reservation System - Admin Dashboard");
             stage.setScene(scene);

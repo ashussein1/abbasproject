@@ -1,20 +1,21 @@
 package abbas.project.hotel.controller;
 
+import abbas.project.hotel.repository.RoomRepository;
 import abbas.project.hotel.service.FeedbackService;
 import abbas.project.hotel.service.ReservationService;
-import abbas.project.hotel.repository.RoomRepository;
+import com.google.inject.Inject;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
-import com.google.inject.Inject;
+import java.time.LocalDate;
 
 public class AdminDashboardController {
 
-    private final RoomRepository roomRepository;
     private final ReservationService reservationService;
+    private final RoomRepository roomRepository;
     private final FeedbackService feedbackService;
 
     @FXML
@@ -27,24 +28,23 @@ public class AdminDashboardController {
     private Label newFeedbackLabel;
 
     @Inject
-    public AdminDashboardController(RoomRepository roomRepository,
-                                    ReservationService reservationService,
+    public AdminDashboardController(ReservationService reservationService,
+                                    RoomRepository roomRepository,
                                     FeedbackService feedbackService) {
-        this.roomRepository = roomRepository;
         this.reservationService = reservationService;
+        this.roomRepository = roomRepository;
         this.feedbackService = feedbackService;
     }
 
     @FXML
     private void initialize() {
-        // Simple metrics
-        long totalRooms = roomRepository.count();
-        long occupied = reservationService.countActiveReservations();
-        long feedback = feedbackService.count();
+        int totalRooms = roomRepository.findAll().size();
+        int occupiedToday = reservationService.countReservationsOn(LocalDate.now());
+        int feedbackCount = feedbackService.getAllFeedback().size();
 
         totalRoomsLabel.setText(String.valueOf(totalRooms));
-        occupiedTodayLabel.setText(String.valueOf(occupied));
-        newFeedbackLabel.setText(String.valueOf(feedback));
+        occupiedTodayLabel.setText(String.valueOf(occupiedToday));
+        newFeedbackLabel.setText(String.valueOf(feedbackCount));
     }
 
     @FXML

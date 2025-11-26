@@ -1,13 +1,18 @@
 package abbas.project.hotel.repository;
 
 import abbas.project.hotel.model.Guest;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
-import java.util.List;
-import java.util.Optional;
+public class GuestRepository {
+    private final ObservableList<Guest> guests = FXCollections.observableArrayList();
 
-public interface GuestRepository {
-    Guest save(Guest guest);
-    Optional<Guest> findById(Long id);
-    Optional<Guest> findByName(String name);
-    List<Guest> findAll();
+    public GuestRepository() {
+        guests.add(new Guest(1L, "John Doe", "416-555-1000", "john@example.com"));
+        guests.add(new Guest(2L, "Sara Ali", "647-555-2000", "sara@example.com"));
+    }
+
+    public ObservableList<Guest> findAll() {
+        return guests;
+    }
 }

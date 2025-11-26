@@ -1,28 +1,32 @@
 package abbas.project.hotel.service;
 
-import abbas.project.hotel.model.ActivityLog;
-import abbas.project.hotel.repository.ActivityLogRepository;
-import abbas.project.hotel.util.Logging;
-
+import abbas.project.hotel.events.DomainEventPublisher;
+import abbas.project.hotel.events.FeedbackSubmittedEvent;
+import abbas.project.hotel.events.ReservationCreatedEvent;
 import com.google.inject.Inject;
-import java.time.LocalDateTime;
-import java.util.logging.Logger;
 
+/**
+ * Simple logger that listens to domain events and writes to console.
+ * Later this could append to log files, DB, etc.
+ */
 public class ActivityLogService {
 
-    private final ActivityLogRepository repository;
-    private final Logger logger = Logging.getLogger(ActivityLogService.class);
-
     @Inject
-    public ActivityLogService(ActivityLogRepository repository) {
-        this.repository = repository;
+    public ActivityLogService(DomainEventPublisher publisher) {
+        publisher.register(event -> {
+            if (event instanceof ReservationCreatedEvent) {
+                ReservationCreatedEvent e = (ReservationCreatedEvent) event;
+                System.out.println("[LOG] Reservation created: #" + e.getReservation().getId());
+            } else if (event instanceof FeedbackSubmittedEvent) {
+                FeedbackSubmittedEvent e = (FeedbackSubmittedEvent) event;
+                System.out.println("[LOG] Feedback submitted: rating=" + e.getFeedback().getRating());
+            } else {
+                System.out.println("[LOG] Event: " + event);
+            }
+        });
     }
 
-    public void log(String actor, String action,
-                    String entityType, String entityId, String message) {
-        ActivityLog log = new ActivityLog(
-                LocalDateTime.now(), actor, action, entityType, entityId, message);
-        repository.save(log);
-        logger.info(actor + " " + action + " [" + entityType + "#" + entityId + "]: " + message);
+    public void logMessage(String message) {
+        System.out.println("[LOG] " + message);
     }
 }

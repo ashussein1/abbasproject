@@ -2,17 +2,16 @@ package abbas.project.hotel.controller;
 
 import abbas.project.hotel.model.Reservation;
 import abbas.project.hotel.service.ReservationService;
+import com.google.inject.Inject;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.event.ActionEvent;
-import javafx.scene.Node;
 import javafx.stage.Stage;
 
-import com.google.inject.Inject;
 import java.time.LocalDate;
-import java.util.Optional;
 
 public class KioskController {
 
@@ -42,31 +41,38 @@ public class KioskController {
     private void handleContinue() {
         String adultsText = adultsField.getText() == null ? "" : adultsField.getText().trim();
         String childrenText = childrenField.getText() == null ? "" : childrenField.getText().trim();
-
-        int adults = adultsText.isEmpty() ? 0 : Integer.parseInt(adultsText);
-        int children = childrenText.isEmpty() ? 0 : Integer.parseInt(childrenText);
-
         LocalDate in = checkInPicker.getValue();
         LocalDate out = checkOutPicker.getValue();
 
         statusLabel.getStyleClass().removeAll("error", "success");
 
-        Optional<Reservation> result = reservationService.kioskQuickBook(
-                "Kiosk Guest", adults, children, in, out);
-
-        if (result.isEmpty()) {
-            statusLabel.setText("Please check number of guests and dates.");
+        if (adultsText.isEmpty() || in == null || out == null) {
+            statusLabel.setText("Please fill in adults and both dates.");
             statusLabel.getStyleClass().add("error");
             return;
         }
 
-        Reservation r = result.get();
+        int adults;
+        int children = 0;
+        try {
+            adults = Integer.parseInt(adultsText);
+            if (!childrenText.isEmpty()) {
+                children = Integer.parseInt(childrenText);
+            }
+        } catch (NumberFormatException ex) {
+            statusLabel.setText("Adults / children must be numbers.");
+            statusLabel.getStyleClass().add("error");
+            return;
+        }
+
+        Reservation reservation = reservationService.createKioskReservation(
+                adults, children, in, out
+        );
+
         statusLabel.setText(
                 "Booking captured for room "
-                        + r.getRoom().getRoomNumber()
-                        + " from " + r.getCheckIn()
-                        + " to " + r.getCheckOut()
-                        + ". Total estimate: $" + String.format("%.2f", r.getTotalEstimate())
+                        + (reservation.getRoom() != null ? reservation.getRoom().getRoomNumber() : "?")
+                        + " from " + in + " to " + out + "."
         );
         statusLabel.getStyleClass().add("success");
     }

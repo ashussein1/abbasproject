@@ -2,15 +2,20 @@ package abbas.project.hotel.repository;
 
 import abbas.project.hotel.model.Room;
 import abbas.project.hotel.model.RoomType;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
-import java.util.List;
-import java.util.Optional;
+public class RoomRepository {
+    private final ObservableList<Room> rooms = FXCollections.observableArrayList();
 
-public interface RoomRepository {
-    Room save(Room room);
-    Optional<Room> findById(Long id);
-    Optional<Room> findByRoomNumber(String number);
-    List<Room> findByType(RoomType type);
-    List<Room> findAll();
-    long count();
+    public RoomRepository() {
+        rooms.add(new Room(1L, "101", RoomType.SINGLE, 120));
+        rooms.add(new Room(2L, "102", RoomType.SINGLE, 120));
+        rooms.add(new Room(3L, "201", RoomType.DOUBLE, 180));
+        rooms.add(new Room(4L, "301", RoomType.DELUXE, 260));
+    }
+
+    public ObservableList<Room> findAll() {
+        return rooms;
+    }
 }

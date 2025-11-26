@@ -12,18 +12,22 @@ import java.net.URL;
 
 public class MainApp extends Application {
 
-    private Injector injector;
+    private static Injector injector;
+
+    public static Injector getInjector() {
+        return injector;
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        // Build DI container
+        // Build DI container once for the whole app
         injector = Guice.createInjector(new AppConfig());
 
-        // Loader that asks Guice to create controllers
         FXMLLoader loader = new FXMLLoader(
                 getClass().getResource("/abbas/project/hotel/view/launcher-view.fxml")
         );
+        // Let Guice create controllers
         loader.setControllerFactory(injector::getInstance);
 
         Parent root = loader.load();
@@ -39,12 +43,6 @@ public class MainApp extends Application {
         primaryStage.setTitle("Hotel Reservation System - Launcher");
         primaryStage.setScene(scene);
         primaryStage.show();
-    }
-
-    @Override
-    public void stop() throws Exception {
-        // place for future cleanup (closing EMF etc.)
-        super.stop();
     }
 
     public static void main(String[] args) {

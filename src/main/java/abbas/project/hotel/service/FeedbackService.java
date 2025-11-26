@@ -1,55 +1,53 @@
 package abbas.project.hotel.service;
 
+import abbas.project.hotel.events.DomainEventPublisher;
+import abbas.project.hotel.events.FeedbackSubmittedEvent;
 import abbas.project.hotel.model.Feedback;
 import abbas.project.hotel.model.Guest;
-import abbas.project.hotel.model.Reservation;
 import abbas.project.hotel.repository.FeedbackRepository;
-import abbas.project.hotel.repository.ReservationRepository;
-
 import com.google.inject.Inject;
+import javafx.collections.ObservableList;
+
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 public class FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
-    private final ReservationRepository reservationRepository;
-    private final ActivityLogService activityLogService;
+    private final DomainEventPublisher publisher;
 
     @Inject
     public FeedbackService(FeedbackRepository feedbackRepository,
-                           ReservationRepository reservationRepository,
-                           ActivityLogService activityLogService) {
+                           DomainEventPublisher publisher) {
         this.feedbackRepository = feedbackRepository;
-        this.reservationRepository = reservationRepository;
-        this.activityLogService = activityLogService;
+        this.publisher = publisher;
     }
 
-    public Feedback submitFeedback(long reservationId, int rating, String comment) {
-        Optional<Reservation> opt = reservationRepository.findById(reservationId);
-        if (opt.isEmpty()) {
-            throw new IllegalArgumentException("Reservation not found: " + reservationId);
-        }
-        Reservation reservation = opt.get();
-        Guest guest = reservation.getGuest();
-
-        Feedback feedback = new Feedback(guest, reservation, rating,
-                comment, LocalDate.now());
-        Feedback saved = feedbackRepository.save(feedback);
-
-        activityLogService.log(guest.getName(), "FEEDBACK_SUBMIT",
-                "Feedback", String.valueOf(saved.getId()),
-                "Rating " + rating);
-
-        return saved;
-    }
-
-    public List<Feedback> findAll() {
+    public ObservableList<Feedback> getAllFeedback() {
         return feedbackRepository.findAll();
     }
 
-    public long count() {
-        return feedbackRepository.count();
+    public void addFeedback(Feedback feedback) {
+        feedbackRepository.add(feedback);
+        publisher.publish(new FeedbackSubmittedEvent(feedback));
+    }
+
+    /**
+     * Convenience for kiosk / feedback-only view – creates a simple anonymous guest
+     * and publishes a FeedbackSubmittedEvent.
+     */
+    public void submitAnonymousFeedback(int rating, String comment) {
+        Guest guest = new Guest(null, "Anonymous Guest", "", "");
+
+        long nextId = feedbackRepository.findAll().stream()
+                .map(Feedback::getId)
+                .filter(Objects::nonNull)
+                .mapToLong(Long::longValue)
+                .max()
+                .orElse(0L) + 1;
+
+        Feedback feedback = new Feedback(nextId, guest, rating, comment, LocalDate.now());
+        feedbackRepository.add(feedback);
+        publisher.publish(new FeedbackSubmittedEvent(feedback));
     }
 }

@@ -1,88 +1,91 @@
 package abbas.project.hotel.service;
 
-import abbas.project.hotel.model.*;
+import abbas.project.hotel.events.DomainEventPublisher;
+import abbas.project.hotel.events.ReservationCreatedEvent;
+import abbas.project.hotel.model.Guest;
+import abbas.project.hotel.model.Reservation;
+import abbas.project.hotel.model.ReservationStatus;
+import abbas.project.hotel.model.Room;
 import abbas.project.hotel.repository.ReservationRepository;
 import abbas.project.hotel.repository.RoomRepository;
-import abbas.project.hotel.util.Logging;
-
+import abbas.project.hotel.util.PriceCalculator;
 import com.google.inject.Inject;
+import javafx.collections.ObservableList;
+
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.logging.Logger;
+import java.util.Objects;
 
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final RoomRepository roomRepository;
-    private final BillingService billingService;
-    private final ActivityLogService activityLogService;
-    private final Logger logger = Logging.getLogger(ReservationService.class);
+    private final DomainEventPublisher publisher;
 
     @Inject
     public ReservationService(ReservationRepository reservationRepository,
                               RoomRepository roomRepository,
-                              BillingService billingService,
-                              ActivityLogService activityLogService) {
+                              DomainEventPublisher publisher) {
         this.reservationRepository = reservationRepository;
         this.roomRepository = roomRepository;
-        this.billingService = billingService;
-        this.activityLogService = activityLogService;
+        this.publisher = publisher;
     }
 
-    public Optional<Reservation> kioskQuickBook(String guestName,
-                                                int adults,
-                                                int children,
-                                                LocalDate checkIn,
-                                                LocalDate checkOut) {
-        int totalPeople = adults + children;
-        if (checkIn == null || checkOut == null || !checkOut.isAfter(checkIn)) {
-            return Optional.empty();
-        }
-        if (totalPeople <= 0) {
-            return Optional.empty();
-        }
+    public ObservableList<Reservation> getAllReservations() {
+        return reservationRepository.findAll();
+    }
 
-        RoomType suggestedType = suggestRoomType(totalPeople);
-        List<Room> candidates = roomRepository.findByType(suggestedType);
-        if (candidates.isEmpty()) return Optional.empty();
+    /**
+     * Used from kiosk: creates a simple pending reservation and returns it.
+     * (For Milestone 3, this is where we’d involve real guest details, room selection, etc.)
+     */
+    public Reservation createKioskReservation(int adults,
+                                              int children,
+                                              LocalDate checkIn,
+                                              LocalDate checkOut) {
 
-        // naive: pick the first room (no complex conflict check for now)
-        Room room = candidates.stream()
-                .min(Comparator.comparing(Room::getRoomNumber))
-                .orElse(candidates.get(0));
+        Room room = roomRepository.findAll().isEmpty()
+                ? null
+                : roomRepository.findAll().get(0); // pick first room for demo
 
-        Guest guest = new Guest(guestName, null, null);
+        Guest guest = new Guest(null, "Kiosk Guest", "", "");
+
+        long nextId = reservationRepository.findAll().stream()
+                .map(Reservation::getId)
+                .filter(Objects::nonNull)
+                .mapToLong(Long::longValue)
+                .max()
+                .orElse(0L) + 1;
+
+        double estimate = PriceCalculator.estimateTotal(room, checkIn, checkOut);
 
         Reservation reservation = new Reservation(
-                guest, room, checkIn, checkOut,
-                ReservationStatus.CONFIRMED, 0.0);
+                nextId,
+                guest,
+                room,
+                checkIn,
+                checkOut,
+                ReservationStatus.PENDING,
+                estimate
+        );
 
-        double total = billingService.calculateWithAddons(reservation, false, false);
-        reservation.setTotalEstimate(total);
+        reservationRepository.add(reservation);
+        publisher.publish(new ReservationCreatedEvent(reservation));
 
-        Reservation saved = reservationRepository.save(reservation);
-
-        activityLogService.log("KIOSK", "CREATE_RESERVATION", "Reservation",
-                String.valueOf(saved.getId()),
-                "Kiosk booking for " + totalPeople + " people in room "
-                        + room.getRoomNumber() + " from " + checkIn + " to " + checkOut);
-
-        logger.info("Created kiosk reservation id=" + saved.getId());
-        return Optional.of(saved);
+        return reservation;
     }
 
-    private RoomType suggestRoomType(int people) {
-        if (people == 1) return RoomType.SINGLE;
-        if (people == 2) return RoomType.SINGLE; // single room but 2 max
-        if (people <= 4) return RoomType.DOUBLE;
-        return RoomType.DOUBLE; // For bigger we’d do multiple rooms; simplified
-    }
-
-    public long countActiveReservations() {
-        return reservationRepository.countByStatus(ReservationStatus.CONFIRMED)
-                + reservationRepository.countByStatus(ReservationStatus.CHECKED_IN);
+    /**
+     * Simple occupancy metric: how many reservations cover the given date.
+     */
+    public int countReservationsOn(LocalDate date) {
+        return (int) reservationRepository.findAll().stream()
+                .filter(res -> {
+                    LocalDate in = res.getCheckIn();
+                    LocalDate out = res.getCheckOut();
+                    return in != null && out != null
+                            && !in.isAfter(date)
+                            && out.isAfter(date);
+                })
+                .count();
     }
 }

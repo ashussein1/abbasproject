@@ -1,17 +1,15 @@
 package abbas.project.hotel.controller;
 
 import abbas.project.hotel.service.FeedbackService;
+import com.google.inject.Inject;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.event.ActionEvent;
-import javafx.scene.Node;
 import javafx.stage.Stage;
-
-import com.google.inject.Inject;
 
 public class FeedbackController {
 
@@ -24,9 +22,6 @@ public class FeedbackController {
     private TextArea commentsArea;
 
     @FXML
-    private TextField reservationIdField;
-
-    @FXML
     private Label statusLabel;
 
     @Inject
@@ -36,32 +31,21 @@ public class FeedbackController {
 
     @FXML
     private void initialize() {
-        ratingSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 5));
+        ratingSpinner.setValueFactory(
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 5));
     }
 
     @FXML
     private void handleSubmit() {
-        String resIdText = reservationIdField.getText() == null ? "" : reservationIdField.getText().trim();
-        if (resIdText.isEmpty()) {
-            statusLabel.setText("Please enter your reservation ID.");
-            statusLabel.getStyleClass().setAll("status-label", "error");
-            return;
-        }
-
-        long resId = Long.parseLong(resIdText);
         int rating = ratingSpinner.getValue();
         String comments = commentsArea.getText() == null ? "" : commentsArea.getText().trim();
 
-        try {
-            feedbackService.submitFeedback(resId, rating, comments);
-            statusLabel.getStyleClass().setAll("status-label", "success");
-            statusLabel.setText("Thank you for your feedback!");
-            commentsArea.clear();
-            reservationIdField.clear();
-        } catch (Exception e) {
-            statusLabel.getStyleClass().setAll("status-label", "error");
-            statusLabel.setText("Unable to submit feedback. Make sure the reservation exists.");
-        }
+        feedbackService.submitAnonymousFeedback(rating, comments);
+
+        statusLabel.getStyleClass().removeAll("error", "success");
+        statusLabel.getStyleClass().add("success");
+        statusLabel.setText("Thank you for your feedback! (Rating: " + rating + ")");
+        commentsArea.clear();
     }
 
     @FXML
