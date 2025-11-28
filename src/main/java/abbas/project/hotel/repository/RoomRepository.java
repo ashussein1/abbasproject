@@ -1,21 +1,38 @@
 package abbas.project.hotel.repository;
 
 import abbas.project.hotel.model.Room;
-import abbas.project.hotel.model.RoomType;
+import abbas.project.hotel.util.JPAUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public class RoomRepository {
-    private final ObservableList<Room> rooms = FXCollections.observableArrayList();
+import javax.persistence.EntityManager;
+import java.util.List;
 
-    public RoomRepository() {
-        rooms.add(new Room(1L, "101", RoomType.SINGLE, 120));
-        rooms.add(new Room(2L, "102", RoomType.SINGLE, 120));
-        rooms.add(new Room(3L, "201", RoomType.DOUBLE, 180));
-        rooms.add(new Room(4L, "301", RoomType.DELUXE, 260));
+public class RoomRepository {
+
+    // Retrieve all rooms from Database
+    public ObservableList<Room> findAll() {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            List<Room> dbRooms = em.createQuery("SELECT r FROM Room r", Room.class).getResultList();
+            return FXCollections.observableArrayList(dbRooms);
+        } finally {
+            em.close();
+        }
     }
 
-    public ObservableList<Room> findAll() {
-        return rooms;
+    // Save a new room to Database
+    public void save(Room room) {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.persist(room);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            em.getTransaction().rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
+        }
     }
 }

@@ -35,57 +35,42 @@
                             <VBox spacing="6">
                                 <children>
                                     <Label text="Adults" styleClass="form-label"/>
-                                    <TextField fx:id="adultsField"
-                                               promptText="Number of adults"
-                                               styleClass="input-field"/>
+                                    <TextField fx:id="adultsField" promptText="Number of adults" styleClass="input-field"/>
                                 </children>
                             </VBox>
 
                             <VBox spacing="6">
                                 <children>
                                     <Label text="Children" styleClass="form-label"/>
-                                    <TextField fx:id="childrenField"
-                                               promptText="Number of children"
-                                               styleClass="input-field"/>
+                                    <TextField fx:id="childrenField" promptText="Number of children" styleClass="input-field"/>
                                 </children>
                             </VBox>
 
                             <VBox spacing="6">
                                 <children>
                                     <Label text="Check-in" styleClass="form-label"/>
-                                    <DatePicker fx:id="checkInPicker"
-                                                promptText="Select check-in date"
-                                                styleClass="date-picker input-field"/>
+                                    <DatePicker fx:id="checkInPicker" promptText="Select check-in date" styleClass="date-picker input-field"/>
                                 </children>
                             </VBox>
 
                             <VBox spacing="6">
                                 <children>
                                     <Label text="Check-out" styleClass="form-label"/>
-                                    <DatePicker fx:id="checkOutPicker"
-                                                promptText="Select check-out date"
-                                                styleClass="date-picker input-field"/>
+                                    <DatePicker fx:id="checkOutPicker" promptText="Select check-out date" styleClass="date-picker input-field"/>
                                 </children>
                             </VBox>
                         </children>
                     </VBox>
 
-                    <!-- status message -->
-                    <Label fx:id="statusLabel"
-                           text=""
-                           styleClass="status-label"/>
+                    <Label fx:id="statusLabel" text="" styleClass="status-label"/>
 
-                    <!-- Back + Continue buttons -->
                     <HBox spacing="10">
-                        <Button text="Back"
-                                onAction="#handleBack"
-                                styleClass="secondary-button"
-                                prefWidth="170"/>
+                        <Button text="Back" onAction="#handleBack" styleClass="secondary-button" prefWidth="120"/>
 
-                        <Button text="Continue"
-                                onAction="#handleContinue"
-                                styleClass="primary-button"
-                                maxWidth="Infinity"/>
+                        <!-- NEW: Waitlist Button (Initially Hidden or styled differently) -->
+                        <Button text="Join Waitlist" onAction="#handleWaitlist" styleClass="secondary-button" prefWidth="150"/>
+
+                        <Button text="Continue" onAction="#handleContinue" styleClass="primary-button" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
                     </HBox>
                 </children>
                 <padding>

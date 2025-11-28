@@ -38,7 +38,6 @@
             <version>7.0.0</version>
         </dependency>
 
-        <!-- JPA / Hibernate (for later milestones) -->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
@@ -68,7 +67,6 @@
 
     <build>
         <plugins>
-            <!-- JavaFX Maven plugin so you don't mess with VM options manually -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>

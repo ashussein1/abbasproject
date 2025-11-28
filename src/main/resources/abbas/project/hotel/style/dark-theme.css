@@ -251,3 +251,68 @@
 .date-picker-popup .right-arrow {
     -fx-background-color: #e5e7eb;
 }
+
+.table-view {
+    -fx-background-color: transparent; /* Transparent background */
+    -fx-base: #020617; /* Dark base color */
+    -fx-control-inner-background: #020617; /* Inner background */
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #0f172a; /* Darker header background */
+    -fx-background-radius: 8px 8px 0 0; /* Rounded top corners */
+    -fx-padding: 0 0 5px 0;
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: transparent;
+    -fx-size: 45px; /* Taller header */
+    -fx-border-color: transparent transparent #1e293b transparent; /* Bottom border only */
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #94a3b8; /* Muted text color for headers */
+    -fx-font-weight: bold;
+    -fx-alignment: center-left;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: #e2e8f0; /* Light text for data */
+    -fx-alignment: center-left;
+    -fx-padding: 0 0 0 10px; /* Left padding */
+    -fx-border-color: transparent transparent #0f172a transparent; /* Subtle row separator */
+}
+
+.table-row-cell {
+    -fx-background-color: #020617; /* Row background */
+    -fx-border-width: 0 0 1 0;
+}
+
+/* Hover effect for rows */
+.table-row-cell:hover {
+    -fx-background-color: #1e293b;
+}
+
+/* Selected row effect */
+.table-row-cell:selected {
+    -fx-background-color: #2563eb; /* Blue highlight */
+    -fx-text-fill: white;
+}
+
+/* Scrollbar styling to blend in */
+.table-view .scroll-bar:vertical,
+.table-view .scroll-bar:vertical .track,
+.table-view .scroll-bar:vertical .track-background,
+.table-view .scroll-bar:horizontal,
+.table-view .scroll-bar:horizontal .track,
+.table-view .scroll-bar:horizontal .track-background {
+    -fx-background-color: #020617;
+}
+
+.table-view .scroll-bar:vertical .thumb,
+.table-view .scroll-bar:horizontal .thumb {
+    -fx-background-color: #334155;
+    -fx-background-radius: 2em;
+}

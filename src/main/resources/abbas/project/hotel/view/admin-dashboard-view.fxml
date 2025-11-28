@@ -19,56 +19,73 @@
               AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
               styleClass="center-container">
 
-            <VBox spacing="12" styleClass="card">
+            <!-- Added maxWidth="600" to keep the card from getting too wide -->
+            <VBox spacing="20" styleClass="card" minWidth="500" maxWidth="600" alignment="CENTER">
                 <children>
-                    <Label text="Admin Dashboard" styleClass="title-label"/>
-                    <Label text="Quick overview of the hotel for Milestone 1."
-                           styleClass="subtitle-label"/>
+                    <!-- Header -->
+                    <VBox spacing="4" alignment="CENTER">
+                        <Label text="Admin Dashboard" styleClass="title-label"/>
+                        <Label text="Hotel Management System" styleClass="subtitle-label"/>
+                    </VBox>
 
-                    <HBox spacing="16">
+                    <!-- Metrics Row -->
+                    <HBox spacing="16" alignment="CENTER">
                         <children>
-                            <VBox spacing="4" styleClass="metric-card">
+                            <VBox spacing="4" styleClass="metric-card" prefWidth="140">
                                 <children>
                                     <Label text="Total Rooms" styleClass="metric-title"/>
-                                    <Label fx:id="totalRoomsLabel"
-                                           text="120"
-                                           styleClass="metric-value"/>
+                                    <Label fx:id="totalRoomsLabel" text="0" styleClass="metric-value"/>
                                 </children>
                             </VBox>
 
-                            <VBox spacing="4" styleClass="metric-card">
+                            <VBox spacing="4" styleClass="metric-card" prefWidth="140">
                                 <children>
                                     <Label text="Occupied Today" styleClass="metric-title"/>
-                                    <Label fx:id="occupiedTodayLabel"
-                                           text="78"
-                                           styleClass="metric-value"/>
+                                    <Label fx:id="occupiedTodayLabel" text="0" styleClass="metric-value"/>
                                 </children>
                             </VBox>
 
-                            <VBox spacing="4" styleClass="metric-card">
+                            <VBox spacing="4" styleClass="metric-card" prefWidth="140">
                                 <children>
                                     <Label text="New Feedback" styleClass="metric-title"/>
-                                    <Label fx:id="newFeedbackLabel"
-                                           text="12"
-                                           styleClass="metric-value"/>
+                                    <Label fx:id="newFeedbackLabel" text="0" styleClass="metric-value"/>
                                 </children>
                             </VBox>
                         </children>
                     </HBox>
 
-                    <Label text="This screen will be expanded to show real data such as reservations, rooms and guest feedback."
-                           wrapText="true"
-                           styleClass="subtitle-label">
-                        <padding>
-                            <Insets top="10" bottom="12"/>
-                        </padding>
-                    </Label>
+                    <Label text="Management Actions" styleClass="section-title"/>
 
-                    <Button text="Back"
-                            onAction="#handleClose"
-                            styleClass="primary-button"
-                            prefWidth="255"/>
+                    <!-- Action Buttons (Fixed Widths now) -->
+                    <VBox spacing="12" alignment="CENTER">
+                        <Button text="Manage Reservations"
+                                onAction="#handleManageReservations"
+                                styleClass="primary-button"
+                                prefWidth="320"/>
+
+                        <HBox spacing="10" alignment="CENTER">
+                            <Button text="View Feedback"
+                                    onAction="#handleFeedback"
+                                    styleClass="secondary-button"
+                                    prefWidth="175"/>
+
+                            <Button text="Generate Reports"
+                                    onAction="#handleReports"
+                                    styleClass="secondary-button"
+                                    prefWidth="175"/>
+                        </HBox>
+
+                        <Button text="Logout"
+                                onAction="#handleLogout"
+                                styleClass="secondary-button"
+                                style="-fx-background-color: #7f1d1d; -fx-text-fill: #fca5a5;"
+                                prefWidth="320"/>
+                    </VBox>
+
                 </children>
+                <padding>
+                    <Insets top="30" right="40" bottom="30" left="40"/>
+                </padding>
             </VBox>
         </VBox>
     </children>

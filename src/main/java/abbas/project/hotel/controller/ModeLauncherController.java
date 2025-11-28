@@ -40,7 +40,6 @@ public class ModeLauncherController {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource(fxmlPath));
 
-            // 🔑 IMPORTANT: use Guice for controllers here too
             loader.setControllerFactory(MainApp.getInjector()::getInstance);
 
             Parent root = loader.load();

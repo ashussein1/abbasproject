@@ -2,31 +2,32 @@ package abbas.project.hotel.service;
 
 import abbas.project.hotel.events.DomainEventPublisher;
 import abbas.project.hotel.events.ReservationCreatedEvent;
-import abbas.project.hotel.model.Guest;
-import abbas.project.hotel.model.Reservation;
-import abbas.project.hotel.model.ReservationStatus;
-import abbas.project.hotel.model.Room;
+import abbas.project.hotel.model.*;
 import abbas.project.hotel.repository.ReservationRepository;
 import abbas.project.hotel.repository.RoomRepository;
+import abbas.project.hotel.repository.WaitlistRepository; // New Import
 import abbas.project.hotel.util.PriceCalculator;
 import com.google.inject.Inject;
 import javafx.collections.ObservableList;
 
 import java.time.LocalDate;
-import java.util.Objects;
+import java.util.List;
 
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final RoomRepository roomRepository;
+    private final WaitlistRepository waitlistRepository; // New Repository
     private final DomainEventPublisher publisher;
 
     @Inject
     public ReservationService(ReservationRepository reservationRepository,
                               RoomRepository roomRepository,
+                              WaitlistRepository waitlistRepository, // Inject here
                               DomainEventPublisher publisher) {
         this.reservationRepository = reservationRepository;
         this.roomRepository = roomRepository;
+        this.waitlistRepository = waitlistRepository;
         this.publisher = publisher;
     }
 
@@ -34,49 +35,82 @@ public class ReservationService {
         return reservationRepository.findAll();
     }
 
-    /**
-     * Used from kiosk: creates a simple pending reservation and returns it.
-     * (For Milestone 3, this is where we’d involve real guest details, room selection, etc.)
-     */
     public Reservation createKioskReservation(int adults,
                                               int children,
                                               LocalDate checkIn,
                                               LocalDate checkOut) {
+        int totalGuests = adults + children;
+        List<Room> allRooms = roomRepository.findAll();
 
-        Room room = roomRepository.findAll().isEmpty()
-                ? null
-                : roomRepository.findAll().get(0); // pick first room for demo
+        Room suitableRoom = null;
+        for (Room room : allRooms) {
+            if (room.getType().getCapacity() >= totalGuests) {
+                if (isRoomAvailable(room, checkIn, checkOut)) {
+                    suitableRoom = room;
+                    break;
+                }
+            }
+        }
 
-        Guest guest = new Guest(null, "Kiosk Guest", "", "");
+        if (suitableRoom == null) {
+            throw new IllegalStateException("No available rooms found for " + totalGuests + " guests.");
+        }
 
-        long nextId = reservationRepository.findAll().stream()
-                .map(Reservation::getId)
-                .filter(Objects::nonNull)
-                .mapToLong(Long::longValue)
-                .max()
-                .orElse(0L) + 1;
-
-        double estimate = PriceCalculator.estimateTotal(room, checkIn, checkOut);
+        Guest guest = new Guest("Kiosk Guest", "555-0000", "kiosk@hotel.com");
+        double estimate = PriceCalculator.estimateTotal(suitableRoom, checkIn, checkOut);
 
         Reservation reservation = new Reservation(
-                nextId,
                 guest,
-                room,
+                suitableRoom,
                 checkIn,
                 checkOut,
                 ReservationStatus.PENDING,
                 estimate
         );
 
-        reservationRepository.add(reservation);
+        reservationRepository.save(reservation);
         publisher.publish(new ReservationCreatedEvent(reservation));
 
         return reservation;
     }
 
-    /**
-     * Simple occupancy metric: how many reservations cover the given date.
-     */
+    // --- NEW: Waitlist Logic ---
+    public void joinWaitlist(int adults, int children, LocalDate checkIn, LocalDate checkOut) {
+        // In a real app, we'd ask for contact info. For Kiosk demo, we use placeholder.
+        WaitlistEntry entry = new WaitlistEntry(
+                "Waitlist Guest",
+                "555-WAIT",
+                "wait@list.com",
+                checkIn,
+                checkOut,
+                adults + children
+        );
+        waitlistRepository.save(entry);
+    }
+
+    public void cancelReservation(Reservation reservation) {
+        if (reservation.getStatus() == ReservationStatus.CHECKED_OUT) {
+            throw new IllegalStateException("Cannot cancel a reservation that is already checked out.");
+        }
+        reservation.setStatus(ReservationStatus.CANCELLED);
+        reservationRepository.update(reservation);
+    }
+
+    private boolean isRoomAvailable(Room room, LocalDate checkIn, LocalDate checkOut) {
+        List<Reservation> existing = reservationRepository.findAll();
+        for (Reservation r : existing) {
+            if (r.getRoom().getId().equals(room.getId()) &&
+                    r.getStatus() != ReservationStatus.CANCELLED &&
+                    r.getStatus() != ReservationStatus.CHECKED_OUT) {
+
+                if (checkIn.isBefore(r.getCheckOut()) && checkOut.isAfter(r.getCheckIn())) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public int countReservationsOn(LocalDate date) {
         return (int) reservationRepository.findAll().stream()
                 .filter(res -> {

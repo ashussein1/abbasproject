@@ -1,24 +1,36 @@
 package abbas.project.hotel.repository;
 
 import abbas.project.hotel.model.Feedback;
-import abbas.project.hotel.model.Guest;
+import abbas.project.hotel.util.JPAUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import java.time.LocalDate;
+
+import javax.persistence.EntityManager;
+import java.util.List;
 
 public class FeedbackRepository {
-    private final ObservableList<Feedback> feedbackList = FXCollections.observableArrayList();
-
-    public FeedbackRepository() {
-        Guest dummy = new Guest(1L, "John Doe", "416-555-1000", "john@example.com");
-        feedbackList.add(new Feedback(1L, dummy, 5, "Great stay!", LocalDate.now().minusDays(2)));
-    }
 
     public ObservableList<Feedback> findAll() {
-        return feedbackList;
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            List<Feedback> list = em.createQuery("SELECT f FROM Feedback f", Feedback.class).getResultList();
+            return FXCollections.observableArrayList(list);
+        } finally {
+            em.close();
+        }
     }
 
-    public void add(Feedback feedback) {
-        feedbackList.add(feedback);
+    public void save(Feedback feedback) {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.persist(feedback);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            em.getTransaction().rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
+        }
     }
 }

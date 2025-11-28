@@ -9,7 +9,6 @@ import com.google.inject.Inject;
 import javafx.collections.ObservableList;
 
 import java.time.LocalDate;
-import java.util.Objects;
 
 public class FeedbackService {
 
@@ -28,26 +27,18 @@ public class FeedbackService {
     }
 
     public void addFeedback(Feedback feedback) {
-        feedbackRepository.add(feedback);
+        feedbackRepository.save(feedback);
         publisher.publish(new FeedbackSubmittedEvent(feedback));
     }
 
-    /**
-     * Convenience for kiosk / feedback-only view – creates a simple anonymous guest
-     * and publishes a FeedbackSubmittedEvent.
-     */
     public void submitAnonymousFeedback(int rating, String comment) {
-        Guest guest = new Guest(null, "Anonymous Guest", "", "");
+        // FIX: Removed 'null' from arguments. Guest only needs Name, Phone, Email now.
+        Guest guest = new Guest("Anonymous Guest", "", "");
 
-        long nextId = feedbackRepository.findAll().stream()
-                .map(Feedback::getId)
-                .filter(Objects::nonNull)
-                .mapToLong(Long::longValue)
-                .max()
-                .orElse(0L) + 1;
+        // Database generates ID automatically, so we don't pass one.
+        Feedback feedback = new Feedback(guest, rating, comment, LocalDate.now());
 
-        Feedback feedback = new Feedback(nextId, guest, rating, comment, LocalDate.now());
-        feedbackRepository.add(feedback);
+        feedbackRepository.save(feedback);
         publisher.publish(new FeedbackSubmittedEvent(feedback));
     }
 }
